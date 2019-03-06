@@ -73,8 +73,8 @@ public class GP58MMIIITicketManager {
      * 获取字符长度
      * 中文字符长度为：2
      * 其它字符长度为：1
-     * @param value
-     * @return
+     * @param value 字符串
+     * @return 字符串的占位长度
      */
     public static int getStringLength(String value) {
         int valueLength = 0;
@@ -91,8 +91,9 @@ public class GP58MMIIITicketManager {
     }
 
     /**
-     *添加一行数据
-     * @return
+     *
+     * @param escCommand esc命令集
+     * @param text 字符数组
      */
     public static void addTextRow(EscCommand escCommand, String[] text){
         try {
