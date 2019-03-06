@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .setUsbDevice(usbDevice)
                     .setContext(this)
                     .build();
-            DeviceConnFactoryManager.getDeviceConnFactoryManagers()[id].openPort();
+            DeviceConnFactoryManager.getDeviceConnFactoryManagers().openPort();
         }
 
     }
@@ -203,10 +203,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 重新连接回收上次连接的对象，避免内存泄漏
      */
     private void closeport(){
-        if(DeviceConnFactoryManager.getDeviceConnFactoryManagers()[id]!=null&&DeviceConnFactoryManager.getDeviceConnFactoryManagers()[id].mPort!=null) {
-            DeviceConnFactoryManager.getDeviceConnFactoryManagers()[id].reader.cancel();
-            DeviceConnFactoryManager.getDeviceConnFactoryManagers()[id].mPort.closePort();
-            DeviceConnFactoryManager.getDeviceConnFactoryManagers()[id].mPort=null;
+        if(DeviceConnFactoryManager.getDeviceConnFactoryManagers()!=null&&DeviceConnFactoryManager.getDeviceConnFactoryManagers().mPort!=null) {
+            DeviceConnFactoryManager.getDeviceConnFactoryManagers().reader.cancel();
+            DeviceConnFactoryManager.getDeviceConnFactoryManagers().mPort.closePort();
+            DeviceConnFactoryManager.getDeviceConnFactoryManagers().mPort=null;
         }
     }
 
@@ -399,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         esc.addUserCommand(bytes);
 
         // 发送数据
-        DeviceConnFactoryManager.getDeviceConnFactoryManagers()[id].sendDataImmediately(datas);
+        DeviceConnFactoryManager.getDeviceConnFactoryManagers().sendDataImmediately(datas);
     }
 
     /**

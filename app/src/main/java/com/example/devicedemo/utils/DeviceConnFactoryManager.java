@@ -58,7 +58,9 @@ public class DeviceConnFactoryManager {
 
     private int id;
 
-    private static DeviceConnFactoryManager[] deviceConnFactoryManagers = new DeviceConnFactoryManager[4];
+//    private static DeviceConnFactoryManager[] deviceConnFactoryManagers = new DeviceConnFactoryManager[4];
+
+    private static DeviceConnFactoryManager deviceConnFactoryManager;
 
     private boolean isOpenPort;
     /**
@@ -153,8 +155,8 @@ public class DeviceConnFactoryManager {
         }
     }
 
-    public static DeviceConnFactoryManager[] getDeviceConnFactoryManagers() {
-        return deviceConnFactoryManagers;
+    public static DeviceConnFactoryManager getDeviceConnFactoryManagers() {
+        return deviceConnFactoryManager;
     }
 
     /**
@@ -163,13 +165,13 @@ public class DeviceConnFactoryManager {
      * @return
      */
     public void openPort() {
-        deviceConnFactoryManagers[id].isOpenPort = false;
+        deviceConnFactoryManager.isOpenPort = false;
         sendStateBroadcast(CONN_STATE_CONNECTING);
-        switch (deviceConnFactoryManagers[id].connMethod) {
+        switch (deviceConnFactoryManager.connMethod) {
             case BLUETOOTH:
                 System.out.println("id -> " + id);
                 mPort = new BluetoothPort(macAddress);
-                isOpenPort = deviceConnFactoryManagers[id].mPort.openPort();
+                isOpenPort = deviceConnFactoryManager.mPort.openPort();
                 break;
             case USB:
                 System.out.println("USB 连接");
@@ -305,13 +307,13 @@ public class DeviceConnFactoryManager {
     }
 
     public static void closeAllPort() {
-        for (DeviceConnFactoryManager deviceConnFactoryManager : deviceConnFactoryManagers) {
+//        for (DeviceConnFactoryManager deviceConnFactoryManager : deviceConnFactoryManagers) {
             if (deviceConnFactoryManager != null) {
                 Log.e(TAG, "cloaseAllPort() id -> " + deviceConnFactoryManager.id);
                 deviceConnFactoryManager.closePort(deviceConnFactoryManager.id);
-                deviceConnFactoryManagers[deviceConnFactoryManager.id] = null;
+                deviceConnFactoryManager = null;
             }
-        }
+//        }
     }
 
     private DeviceConnFactoryManager(Build build) {
@@ -324,7 +326,7 @@ public class DeviceConnFactoryManager {
         this.serialPortPath = build.serialPortPath;
         this.baudrate = build.baudrate;
         this.id = build.id;
-        deviceConnFactoryManagers[id] = this;
+        deviceConnFactoryManager = this;
     }
 
     /**
@@ -333,7 +335,7 @@ public class DeviceConnFactoryManager {
      * @return PrinterCommand
      */
     public PrinterCommand getCurrentPrinterCommand() {
-        return deviceConnFactoryManagers[id].currentPrinterCommand;
+        return deviceConnFactoryManager.currentPrinterCommand;
     }
 
     public static final class Build {
@@ -478,7 +480,7 @@ public class DeviceConnFactoryManager {
                     }
                 }
             } catch (Exception e) {
-                if (deviceConnFactoryManagers[id] != null) {
+                if (deviceConnFactoryManager != null) {
                     closePort(id);
                 }
             }

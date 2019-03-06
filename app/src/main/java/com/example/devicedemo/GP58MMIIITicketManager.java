@@ -56,7 +56,7 @@ public class GP58MMIIITicketManager {
 
         Vector<Byte> datas = esc.getCommand();
         // 发送数据
-        DeviceConnFactoryManager.getDeviceConnFactoryManagers()[0].sendDataImmediately(datas);
+        DeviceConnFactoryManager.getDeviceConnFactoryManagers().sendDataImmediately(datas);
 
     }
 
