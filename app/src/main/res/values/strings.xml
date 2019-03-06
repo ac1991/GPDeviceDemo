@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">DeviceDemo</string>
+
+    <string name="str_printer_conn_normal">打印机连接正常</string>
+    <string name="str_printer_out_of_paper">打印机缺纸</string>
+    <string name="str_printer_open_cover">打印机开盖</string>
+    <string name="str_printer_error">打印机出错</string>
+    <string name="str_state">状态：</string>
+    <string name="str_printer_printmode_esc">打印模式:ESC</string>
+    <string name="str_printer_printmode_tsc">打印模式:TSC</string>
+    <string name="str_printer_printmode_cpcl">打印模式:CPCL</string>
+</resources>
