@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_BIG,TicketAlign.CENTER,"--已在线支付--"));
         bean.addLineStr();
 
-        bean.addLineBean(new ColumnLineBean(TicketTextSize.FONT_SIZE_NORMAL,new String[]{"订单号:"+ 103330011 +"1122334","人数：袭击继续积极信息喜欢息事项稀释性呼吸细心和喜欢"+5+"人"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.RIGHT},null));
+        bean.addLineBean(new ColumnLineBean(TicketTextSize.FONT_SIZE_NORMAL,new String[]{"订单号:"+ 103330011 +"1122334","人数："+5+"人"},null,new int[]{100, 100}));
         bean.addLineBean(new SimpleLineBean(TicketAlign.LEFT,"商品总数："+ 23));
         bean.addLineBean(new SimpleLineBean(TicketAlign.LEFT,"下单时间："+ "2019-1-1 18:00"));
         bean.addLineBean(new SimpleLineBean(TicketAlign.LEFT,"备注："+ "吃鸡"));
