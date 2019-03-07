@@ -109,72 +109,26 @@ public class GP58MMIIITicketManager {
      */
     public static void addTextRow(EscCommand escCommand, String[] texts, int[] weights) throws Exception {
         addTextRow(escCommand, texts, weights, null);
-//        int textArraySize = texts.length;
-//
-//        int marginSize = 1;//单位：字符
-//
-//        if (weights == null){
-//            weights = new int[textArraySize];
-//            for (int i = 0; i < textArraySize; i++){
-//                weights[i] = 1;
-//            }
-//        }
-//
-//        if (texts.length != weights.length){
-//            throw new Exception("text.length != weight.length");
-//        }
-//
-//        //总权重
-//        int sumWeight = 0;
-//        for (int i = 0; i< weights.length; i++){
-//            sumWeight += weights[i];
-//        }
-//
-//        int maxRowNum = 0;//获取最大行数
-//        int[] textLengthColumns = new int[textArraySize]; //不同列文本的长度
-//        int[] offsetColumns = new int[textArraySize]; //每列文本偏移量
-//        int offsetSum = 0;
-//        for (int textIndex = 0; textIndex < textArraySize; textIndex++) {
-//            offsetColumns[textIndex] = offsetSum;
-//            int textLengthColumn = (int) ((maxSize - marginSize * (textArraySize - 1)) * (((float)weights[textIndex] /(float)sumWeight))); //当前列文本的长度
-//            offsetSum += textLengthColumn * 12 + marginSize * 12;
-//
-//            textLengthColumns[textIndex] = textLengthColumn;
-//
-//            int textLength = getStringLength(texts[textIndex]);//获取文本的长度
-//            int tempRowNum = (textLength % textLengthColumn) > 0 ? (textLength/ textLengthColumn) + 1 : (textLength/ textLengthColumn);
-//
-//            if (maxRowNum < tempRowNum) {
-//                maxRowNum = tempRowNum;
-//            }
-//            Log.i("获取最大行数", "maxRowNum:" + maxRowNum);
-//        }
-//
-//        for (int i = 0; i < maxRowNum; i++) {//分行
-//            Log.i("第几行：", i + "");
-//
-//            for (int index = 0; index < textArraySize; index++) { //为每列文本设置被截取的字符串和位移量
-//                int textLength = getStringLength(texts[index]);
-//                if (textLength > i * textLengthColumns[index]) { //判断字符长度是否大于 行数 * 每行文本数，如果大于，则添加打印，如果小于，则表示已经无文本可打印
-//                    Log.i("第几列：", index + "");
-//
-//                    //设置绝对打印位置
-//                    escCommand.addSetAbsolutePrintPosition((short) offsetColumns[index]);
-//                    escCommand.addText(getSubString(texts[index], i * textLengthColumns[index], (i + 1)* textLengthColumns[index]));
-//                }
-//            }
-//            escCommand.addPrintAndLineFeed();
-//        }
     }
 
     /**
      * 添加一行需要打印的数据
+     *
+     * 具体算法：
+     * 1.计算每一个text的长度（一个中文字符长度为：2，一个英文字符长度为1）
+     * 2.根据权重计算每列字符的宽度（默认权重相同）和偏移量
+     * 3.根据每列字符宽度截取文本打印（一个中文字符长度为：2，一个英文字符长度为1）
+     * 4.根据对齐设置进行文本排版
+     * 5.添加打印
+     *
      * @param escCommand esc命令集
      * @param texts 字符数组
      * @param weights 每列的权重
      * @throws Exception
      */
     public static void addTextRow(EscCommand escCommand, String[] texts, int[] weights, TicketAlign[] ticketAligns) throws Exception {
+        // 取消倍高倍宽
+        escCommand.addSelectPrintModes(EscCommand.FONT.FONTA, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF);
         int textArraySize = texts.length;
 
         int marginSize = 1;//单位：字符
@@ -204,7 +158,7 @@ public class GP58MMIIITicketManager {
         }
 
         int maxRowNum = 0;//获取最大行数
-        int[] textLengthColumns = new int[textArraySize]; //不同列文本的长度
+        int[] textLengthColumns = new int[textArraySize]; //不同列文本的宽度
         int[] offsetColumns = new int[textArraySize]; //每列文本偏移量
         int offsetSum = 0;
         for (int textIndex = 0; textIndex < textArraySize; textIndex++) {
@@ -228,13 +182,14 @@ public class GP58MMIIITicketManager {
 
             for (int index = 0; index < textArraySize; index++) { //为每列文本设置被截取的字符串和位移量
                 int textLength = getStringLength(texts[index]);
-                if (textLength > i * textLengthColumns[index]) { //判断字符长度是否大于 行数 * 每行文本数，如果大于，则添加打印，如果小于，则表示已经无文本可打印
+                if (textLength > i * textLengthColumns[index]) { //判断字符长度是否大于 行数 * 每行文本数，如果大于，则添加打印；如果小于，则表示已经无文本可打印
                     Log.i("第几列：", index + "");
 
-                    //设置绝对打印位置
+                    //设置绝对打印位置，即每列字符串的偏移量
                     escCommand.addSetAbsolutePrintPosition((short) offsetColumns[index]);
                     String subString = getSubString(texts[index], i * textLengthColumns[index], (i + 1)* textLengthColumns[index]);
 
+                    //设置对齐方式
                     switch (ticketAligns[index]){
                         case LEFT:
 
@@ -294,6 +249,12 @@ public class GP58MMIIITicketManager {
         return "";
     }
 
+    /**
+     * 获取经过居中对齐之后的排版字符串
+     * @param text
+     * @param rowLength
+     * @return
+     */
     private static String getCenterAlignString(String text, int rowLength){
         int textLength = getStringLength(text);
         String centerString = "";
@@ -309,6 +270,12 @@ public class GP58MMIIITicketManager {
         return centerString;
     }
 
+    /**
+     * 获取经过居右对齐的排版字符串
+     * @param text
+     * @param rowLength
+     * @return
+     */
     private static String getRightAlignString(String text, int rowLength){
         int textLength = getStringLength(text);
         String centerString = "";
