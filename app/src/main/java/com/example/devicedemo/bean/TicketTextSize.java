@@ -27,13 +27,24 @@ public enum  TicketTextSize {
         byte temp = 0;
 
         if (val == FONT_SIZE_BIG.getVal() || val == FONT_SIZE_MAX_BIG.getVal()){
+            temp = (byte)(temp | 8);//加粗
             // 设置为倍高倍宽
-            temp = (byte)(temp | 16);//倍高
-            temp = (byte)(temp | 32);//倍宽
+//            temp = (byte)(temp | 16);//倍高
+//            temp = (byte)(temp | 32);//倍宽
+
+
 
         }
         byte[] command = new byte[]{27, 33, temp};
         return command;
     }
+    public int getXPrinterTextSize(){
+        if (val == FONT_SIZE_BIG.getVal() || val == FONT_SIZE_MAX_BIG.getVal()){
+            return 17;
+        }
+
+        return 0;
+    }
+
 
 }

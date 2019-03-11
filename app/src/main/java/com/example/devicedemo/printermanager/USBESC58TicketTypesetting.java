@@ -1,53 +1,62 @@
-package com.example.devicedemo;
+package com.example.devicedemo.printermanager;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
+
 
 import com.example.devicedemo.bean.AbstractLineBean;
 import com.example.devicedemo.bean.ColumnLineBean;
 import com.example.devicedemo.bean.SimpleLineBean;
 import com.example.devicedemo.bean.TicketAlign;
 import com.example.devicedemo.bean.TicketPrintBean;
-import com.example.devicedemo.bean.TicketTextSize;
-import com.example.devicedemo.utils.DeviceConnFactoryManager;
-import com.tools.command.EscCommand;
+import com.example.devicedemo.utils.StringUtils;
 
-import java.util.Vector;
+import net.posprinter.utils.DataForSendToPrinterPos58;
 
-import static com.example.devicedemo.bean.TicketAlign.LEFT;
+import java.util.ArrayList;
+import java.util.List;
+
+
 
 /**
  * Created by sqwu on 2019/3/5
+ *小票打印排版
  */
-public class GP58MMIIITicketManager {
+public class USBESC58TicketTypesetting {
+    private static int  charSize = 12;//设置一个字符长度为12
     /**
      * 最多允许字符宽度
      * 此处-20是因为防止右边字符溢出换行
      */
-    private static int maxSize = (384)/12;
+    private static int maxSize = (384 )/charSize;
 
-    public static void print(TicketPrintBean bean){
-        EscCommand esc = new EscCommand();
-        esc.addInitializePrinter();
+
+
+    public static List<byte[]> print(TicketPrintBean bean){
+        List<byte[]> list = new ArrayList<byte[]>();
         for (int i = 0; i < bean.getLineList().size(); i++) {
             AbstractLineBean lineBean = bean.getLineList().get(i);
-            esc.addSelectPrintModes(EscCommand.FONT.FONTA, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF);
+//            esc.addSelectPrintModes(EscCommand.FONT.FONTA, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF);
             switch (lineBean.getType()){
                 case TicketPrintBean.SIMPLE_LINE_BEAN:
+                    list.add(DataForSendToPrinterPos58.initializePrinter());
+//                    esc.addSelectPrintModes(EscCommand.FONT.FONTA, EscCommand.ENABLE.ON, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF);
                     SimpleLineBean simpleLineBean = (SimpleLineBean) lineBean;
-                    //设置居中、居左、居右
-                    esc.addSelectJustification(simpleLineBean.align.getGp58MBIIIAlign());
-                    esc.addUserCommand(simpleLineBean.textSize.getGP58MMIIITextSize());
-//                    esc.add
-                    esc.addText(simpleLineBean.text+"\n");
+                    list.add(DataForSendToPrinterPos58.setLineSpaceing(70));
+                    list.add(DataForSendToPrinterPos58.selectAlignment(simpleLineBean.align.getVal()));
+                    list.add(DataForSendToPrinterPos58.selectCharacterSize(simpleLineBean.textSize.getXPrinterTextSize()));
+                    list.add(StringUtils.strTobytes(simpleLineBean.text));
+                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
                     break;
                 case TicketPrintBean.COLUMN_LINE_BEAN:
                     ColumnLineBean columnLineBean = (ColumnLineBean) lineBean;
+                    list.add(DataForSendToPrinterPos58.initializePrinter());
                     //默认倍高
-                    esc.addUserCommand(TicketTextSize.FONT_SIZE_NORMAL.getGP58MMIIITextSize());
+//                    esc.addUserCommand(TicketTextSize.FONT_SIZE_NORMAL.getGP58MMIIITextSize());
                     //默认居左打印
-                    esc.addSelectJustification(LEFT.getGp58MBIIIAlign());
+//                    esc.addSelectJustification(LEFT.getGp58MBIIIAlign());
                     try {
-                        addTextRow(esc, columnLineBean.texts, columnLineBean.widths, columnLineBean.aligns);
+                        addTextRow(list, columnLineBean.texts, columnLineBean.widths, columnLineBean.aligns);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -55,14 +64,7 @@ public class GP58MMIIITicketManager {
             }
         }
 
-        esc.addPrintAndFeedLines((byte) 4);
-        // 加入查询打印机状态，用于连续打印
-        byte[] bytes={29,114,1};
-        esc.addUserCommand(bytes);
-
-        Vector<Byte> datas = esc.getCommand();
-        // 发送数据
-        DeviceConnFactoryManager.getDeviceConnFactoryManagers().sendDataImmediately(datas);
+        return list;
 
     }
 
@@ -80,35 +82,27 @@ public class GP58MMIIITicketManager {
             String temp = value.substring(i, i + 1);
             if (temp.matches(chinese)) {
                 valueLength += 2;
-            } else {
+            }else {
                 valueLength += 1;
             }
         }
         return valueLength;
     }
 
-    /**
-     * 添加一行需要打印的数据
-     * @param escCommand esc命令集
-     * @param text 字符数组
-     */
-    public static void addTextRow(EscCommand escCommand, String[] text){
-        try {
-            addTextRow(escCommand, text, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    // 根据UnicodeBlock方法判断中文标点符号
 
-    /**
-     * 添加一行需要打印的数据
-     * @param escCommand esc命令集
-     * @param texts 字符数组
-     * @param weights 每列的权重
-     * @throws Exception
-     */
-    public static void addTextRow(EscCommand escCommand, String[] texts, int[] weights) throws Exception {
-        addTextRow(escCommand, texts, weights, null);
+    @SuppressLint("NewApi")
+    public static boolean isChinesePunctuation(char c) {
+        Character.UnicodeBlock ub = Character.UnicodeBlock.of(c);
+        if (ub == Character.UnicodeBlock.GENERAL_PUNCTUATION
+                || ub == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION
+                || ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS
+                || ub == Character.UnicodeBlock.CJK_COMPATIBILITY_FORMS
+                || ub == Character.UnicodeBlock.VERTICAL_FORMS) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -121,14 +115,21 @@ public class GP58MMIIITicketManager {
      * 4.根据对齐设置进行文本排版
      * 5.添加打印
      *
-     * @param escCommand esc命令集
+     * @param list esc命令集
      * @param texts 字符数组
      * @param weights 每列的权重
      * @throws Exception
      */
-    public static void addTextRow(EscCommand escCommand, String[] texts, int[] weights, TicketAlign[] ticketAligns) throws Exception {
+    public static void addTextRow(List<byte[]> list, String[] texts, int[] weights, TicketAlign[] ticketAligns) throws Exception {
+        //设置位移单位，算法参考文档
+        list.add(DataForSendToPrinterPos58.setHorizontalAndVerticalMoveUnit((int) (Math.round(25.4 * 8 / charSize)), 0));
+        list.add(DataForSendToPrinterPos58.selectFont(0));
+        list.add(DataForSendToPrinterPos58.setLineSpaceing(70));
+//        escCommand.addSetHorAndVerMotionUnits((byte)0, (byte)0);
         // 取消倍高倍宽
-        escCommand.addSelectPrintModes(EscCommand.FONT.FONTA, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF);
+//        escCommand.addSelectPrintModes(EscCommand.FONT.FONTA, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF, EscCommand.ENABLE.OFF);
+        //是否反白打印
+//        escCommand.addTurnReverseModeOnOrOff(EscCommand.ENABLE.ON);
         int textArraySize = texts.length;
 
         int marginSize = 1;//单位：字符
@@ -163,8 +164,8 @@ public class GP58MMIIITicketManager {
         int offsetSum = 0;
         for (int textIndex = 0; textIndex < textArraySize; textIndex++) {
             offsetColumns[textIndex] = offsetSum;
-            int textLengthColumn = (int) ((maxSize - marginSize * (textArraySize - 1)) * (((float)weights[textIndex] /(float)sumWeight))); //当前列文本的长度
-            offsetSum += textLengthColumn * 12 + marginSize * 12;
+            int textLengthColumn = Math.round(((maxSize - marginSize * (textArraySize - 1)) * (((float)weights[textIndex] /(float)sumWeight)))); //当前列文本的长度
+            offsetSum += textLengthColumn  + marginSize ;
 
             textLengthColumns[textIndex] = textLengthColumn;
 
@@ -184,9 +185,10 @@ public class GP58MMIIITicketManager {
                 int textLength = getStringLength(texts[index]);
                 if (textLength > i * textLengthColumns[index]) { //判断字符长度是否大于 行数 * 每行文本数，如果大于，则添加打印；如果小于，则表示已经无文本可打印
                     Log.i("第几列：", index + "");
-
+                    Log.i("位移：", offsetColumns[index] + "");
                     //设置绝对打印位置，即每列字符串的偏移量
-                    escCommand.addSetAbsolutePrintPosition((short) offsetColumns[index]);
+//                    escCommand.addSetAbsolutePrintPosition((short) offsetColumns[index]);
+                    list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(offsetColumns[index], 0));
                     String subString = getSubString(texts[index], i * textLengthColumns[index], (i + 1)* textLengthColumns[index]);
 
                     //设置对齐方式
@@ -202,10 +204,11 @@ public class GP58MMIIITicketManager {
                             break;
                     }
 
-                    escCommand.addText(subString);
+                    list.add(StringUtils.strTobytes(subString));
                 }
             }
-            escCommand.addPrintAndLineFeed();
+
+            list.add(DataForSendToPrinterPos58.printAndFeedLine());
         }
     }
 
@@ -233,7 +236,7 @@ public class GP58MMIIITicketManager {
                 if (lastIndex + charLength > startIndex) {
                     Log.d("endIndex", endIndex + "");
                     if (lastIndex <= endIndex && lastIndex + charLength > endIndex) {
-                        Log.d("subString", subString);
+                        Log.d("截取字符", subString);
                         return subString;
                     }
 
@@ -243,7 +246,7 @@ public class GP58MMIIITicketManager {
                 lastIndex += charLength;
 
             }
-
+            Log.d("截取字符", subString);
             return subString;
         }
         return "";

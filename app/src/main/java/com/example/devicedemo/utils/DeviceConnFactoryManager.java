@@ -306,7 +306,7 @@ public class DeviceConnFactoryManager {
         return baudrate;
     }
 
-    public static void closeAllPort() {
+    public static void closePort() {
 //        for (DeviceConnFactoryManager deviceConnFactoryManager : deviceConnFactoryManagers) {
             if (deviceConnFactoryManager != null) {
                 Log.e(TAG, "cloaseAllPort() id -> " + deviceConnFactoryManager.id);
@@ -454,6 +454,9 @@ public class DeviceConnFactoryManager {
         });
     }
 
+    /**
+     * 开启死循环监听打印机状态
+     */
     public class PrinterReader extends Thread {
         private boolean isRun = false;
 
@@ -491,6 +494,9 @@ public class DeviceConnFactoryManager {
         }
     }
 
+    /**
+     * 接收打印机状态
+     */
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {

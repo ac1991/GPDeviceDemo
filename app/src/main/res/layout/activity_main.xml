@@ -15,12 +15,28 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <Button
+        android:id="@+id/connect2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="连接2"
+        app:layout_constraintStart_toEndOf="@id/connect"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <Button
         android:id="@+id/print"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/connect"
         app:layout_constraintStart_toStartOf="parent"
         android:text="打印"/>
+
+    <Button
+        android:id="@+id/print2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/connect"
+        app:layout_constraintStart_toEndOf="@id/print"
+        android:text="打印2"/>
 
     <TextView
         android:id="@+id/deviceName"

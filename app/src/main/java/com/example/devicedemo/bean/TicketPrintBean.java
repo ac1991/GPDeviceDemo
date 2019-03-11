@@ -32,7 +32,11 @@ public class TicketPrintBean {
     }
 
     public void addLineStr(){
-        lineList.add(new SimpleLineBean(TicketAlign.LEFT, ""));
+        lineList.add(new SimpleLineBean(TicketAlign.LEFT, "-------------------------------"));
+    }
+
+    public void addEmptyLine(){
+        lineList.add(new SimpleLineBean(TicketAlign.LEFT, " "));
     }
 
 
