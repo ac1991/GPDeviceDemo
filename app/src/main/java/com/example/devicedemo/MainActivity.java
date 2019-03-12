@@ -179,7 +179,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void requestUsbPermission(){
-       ;
 
     }
 
@@ -492,9 +491,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bean.addEmptyLine();
         try {
             usbTicketPrint1.doPrint(bean);
+
+            usbTicketPrint1.doPrintQRCode("www.baidu.com");
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
     }
 
     void printOrder2(){
@@ -519,6 +522,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bean.addEmptyLine();
         try {
             usbTicketPrint2.doPrint(bean);
+            usbTicketPrint2.doPrintQRCode("www.baidu.com");
         } catch (Exception e) {
             e.printStackTrace();
         }

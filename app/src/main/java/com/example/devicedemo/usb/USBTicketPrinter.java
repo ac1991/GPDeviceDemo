@@ -9,6 +9,8 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
 
+import com.example.devicedemo.manager.UsbConnect;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -24,12 +26,20 @@ public class USBTicketPrinter {
 	private final UsbDeviceConnection mConnection;
 	private final UsbInterface mInterface;
 	private final UsbEndpoint mEndpoint;
+	private final UsbEndpoint mInEndpoint;
 
 	private static final int TRANSFER_TIMEOUT = 200;
+
+	/**
+	 * ESC查询打印机实时状态指令
+	 * 查询脱机状态
+	 */
+	private byte[] esc = {0x10, 0x04, 0x02};
 
 	public USBTicketPrinter(Context context, UsbDevice device) throws IOException {
 		UsbInterface iface = null;
 		UsbEndpoint epout = null;
+		UsbEndpoint epin = null;
 		
 		for(int i=0; i<device.getInterfaceCount(); i++) {
 			iface = device.getInterface(i);
@@ -41,11 +51,15 @@ public class USBTicketPrinter {
 				UsbEndpoint ep = iface.getEndpoint(j);
 				if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {
 					epout = ep;
-					break;
+//					break;
+				}
+
+				if (ep.getDirection() == UsbConstants.USB_DIR_IN){
+					epin = ep;
 				}
 			}
 			
-			if(epout != null)
+			if(epout != null  && epin != null)
 				break;
 		}
 
@@ -56,6 +70,7 @@ public class USBTicketPrinter {
 		mDevice = device;
 		mInterface = iface;
 		mEndpoint = epout;
+		mInEndpoint = epin;
 
 		UsbManager usbman = (UsbManager) context.getSystemService(Context.USB_SERVICE);
 		mConnection = usbman.openDevice(mDevice);
@@ -89,6 +104,32 @@ public class USBTicketPrinter {
 				}
 			}
 		}
+
+		//每次打印完成后发送打印机状态查询指令
+		try {
+			write(esc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void printQRCode(List<byte[]> list){
+		if (list != null && list.size() > 0){
+			for (int i =0; i < list.size(); i++){
+				try {
+					write(list.get(i));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		//每次打印完成后发送打印机状态查询指令
+		try {
+			write(esc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -101,6 +142,10 @@ public class USBTicketPrinter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public int readData(byte[] bytes) throws IOException {
+		return this.mConnection != null ? this.mConnection.bulkTransfer(this.mInEndpoint, bytes, bytes.length, 200) : 0;
 	}
 
 }

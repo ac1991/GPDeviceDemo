@@ -13,6 +13,7 @@ public abstract class AbstractTicketAction implements BaseAction<TicketPrintConf
     private OnActionCallback callback;
 
     public abstract void doPrint(TicketPrintBean bean)throws Exception;
+    public abstract void doPrintQRCode(String qrcode)throws Exception;
     public abstract void openCashBox();
 
     @Override

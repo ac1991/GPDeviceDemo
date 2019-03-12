@@ -30,8 +30,6 @@ public class USBESC58TicketTypesetting {
      */
     private static int maxSize = (384 )/charSize;
 
-
-
     public static List<byte[]> print(TicketPrintBean bean){
         List<byte[]> list = new ArrayList<byte[]>();
         for (int i = 0; i < bean.getLineList().size(); i++) {
