@@ -7,6 +7,7 @@ import java.util.List;
 public class TicketPrintBean {
     public static final int SIMPLE_LINE_BEAN = 0;
     public static final int COLUMN_LINE_BEAN = SIMPLE_LINE_BEAN+1;
+    public static final int QRCODE_BEAN = COLUMN_LINE_BEAN+1;
 
     private int printCount = 1;
     private List<AbstractLineBean> lineList = new ArrayList<>();

@@ -1,51 +1,32 @@
 package com.example.devicedemo;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.devicedemo.bean.ColumnLineBean;
+import com.example.devicedemo.bean.QrcodeBean;
 import com.example.devicedemo.bean.SimpleLineBean;
 import com.example.devicedemo.bean.TicketAlign;
 import com.example.devicedemo.bean.TicketPrintBean;
 import com.example.devicedemo.bean.TicketTextSize;
-import com.example.devicedemo.manager.UsbConnect;
-import com.example.devicedemo.printermanager.USBESC58TicketTypesetting;
-import com.example.devicedemo.printermanager.GP58MMIIITicketManager;
-import com.example.devicedemo.ticket.USBTicketPrint;
-import com.example.devicedemo.usb.OnUsbPermissionCallback;
+import com.example.devicedemo.ticket.USB58TicketPrint;
 import com.example.devicedemo.usb.USBController;
-import com.example.devicedemo.usb.USBTicketPrinter;
-import com.example.devicedemo.utils.DeviceConnFactoryManager;
 import com.example.devicedemo.utils.Utils;
-import com.tools.command.EscCommand;
 
-import net.posprinter.utils.DataForSendToPrinterPos58;
-import net.posprinter.utils.DataForSendToPrinterPos80;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-
-import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_ATTACHED;
-import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED;
-import static com.example.devicedemo.utils.DeviceConnFactoryManager.ACTION_QUERY_PRINTER_STATE;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Button connect, connect2;
@@ -118,13 +99,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        usbConnect2 = new UsbConnect(getApplicationContext());
     }
 
-//    USBTicketPrinter USBTicketPrinter1;
-    USBTicketPrint usbTicketPrint1;
+//    USB58TicketPrinter USBTicketPrinter1;
+    USB58TicketPrint usb58TicketPrint1;
     private void connect3(){
-        usbTicketPrint1 = new USBTicketPrint(getApplicationContext());
+        usb58TicketPrint1 = new USB58TicketPrint(getApplicationContext());
         UsbDevice usbDevice = Utils.getUsbDeviceFromPidAndVid(getApplicationContext(), 1803, 1155);
-        usbTicketPrint1.setUsbDevice(usbDevice);
-        usbTicketPrint1.open();
+        if (usbDevice == null){
+            Toast.makeText(this, "找不到usb设备", Toast.LENGTH_LONG).show();
+            return;
+        }
+        usb58TicketPrint1.setUsbDevice(usbDevice);
+        usb58TicketPrint1.open();
 
 //        try {
 //            UsbDevice usbDevice = Utils.getUsbDeviceFromName(getApplicationContext(), "/dev/bus/usb/003/006");
@@ -133,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                public void onUsbPermissionEvent(UsbDevice dev, boolean granted) {
 //                    if (granted) {
 //                        try {
-//                            USBTicketPrinter1 = new USBTicketPrinter(getApplicationContext(), dev);
+//                            USBTicketPrinter1 = new USB58TicketPrinter(getApplicationContext(), dev);
 //                        } catch (IOException e) {
 //                            e.printStackTrace();
 //                        }
@@ -141,20 +126,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                }
 //            });
 //            if (suc) {
-//                USBTicketPrinter1 = new USBTicketPrinter(getApplicationContext(), usbDevice);
+//                USBTicketPrinter1 = new USB58TicketPrinter(getApplicationContext(), usbDevice);
 //            }
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
     }
 
-//    USBTicketPrinter USBTicketPrinter2;
-    USBTicketPrint usbTicketPrint2;
+//    USB58TicketPrinter USBTicketPrinter2;
+    USB58TicketPrint usb58TicketPrint2;
     private void connect4(){
-        usbTicketPrint2 = new USBTicketPrint(getApplicationContext());
+        usb58TicketPrint2 = new USB58TicketPrint(getApplicationContext());
         UsbDevice usbDevice = Utils.getUsbDeviceFromPidAndVid(getApplicationContext(), 512, 26728);
-        usbTicketPrint2.setUsbDevice(usbDevice);
-        usbTicketPrint2.open();
+        if (usbDevice == null){
+            Toast.makeText(this, "找不到usb设备", Toast.LENGTH_LONG).show();
+            return;
+        }
+        usb58TicketPrint2.setUsbDevice(usbDevice);
+        usb58TicketPrint2.open();
 
 //        try {
 //            UsbDevice usbDevice = Utils.getUsbDeviceFromName(getApplicationContext(), "/dev/bus/usb/003/007");
@@ -163,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                public void onUsbPermissionEvent(UsbDevice dev, boolean granted) {
 //                    if (granted) {
 //                        try {
-//                            USBTicketPrinter2 = new USBTicketPrinter(getApplicationContext(), dev);
+//                            USBTicketPrinter2 = new USB58TicketPrinter(getApplicationContext(), dev);
 //                        } catch (IOException e) {
 //                            e.printStackTrace();
 //                        }
@@ -171,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                }
 //            });
 //            if (suc) {
-//                USBTicketPrinter2 = new USBTicketPrinter(getApplicationContext(), usbDevice);
+//                USBTicketPrinter2 = new USB58TicketPrinter(getApplicationContext(), usbDevice);
 //            }
 //        } catch (IOException e) {
 //            e.printStackTrace();
@@ -193,12 +182,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.print:
                 printOrder();
+//                printImage1();
                 break;
             case R.id.connect2:
                 connect4();
                 break;
             case R.id.print2:
                 printOrder2();
+//                printImage();
                 break;
         }
     }
@@ -475,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_BIG,TicketAlign.CENTER,"--已在线支付--"));
         bean.addLineStr();
 
-        bean.addLineBean(new ColumnLineBean(new String[]{"订单号:10000987",  "人数：0人"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.RIGHT},new int[]{100,100}));
+        bean.addLineBean(new ColumnLineBean(new String[]{"订单号:1000098700000000000",  "人数：00000000人"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.RIGHT},new int[]{100,100}));
         bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"商品总数：1"));
         bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"下单时间：2019-03-20 18:00:32"));
         bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"备注："));
@@ -486,13 +477,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bean.addLineStr();
 
         bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.CENTER,"谢谢惠顾，欢迎下次光临"));
+        bean.addLineBean(new QrcodeBean(TicketAlign.CENTER, "www.baidu.com/com/com"));
 //        return USBESC58TicketTypesetting.print(bean);
         bean.addEmptyLine();
         bean.addEmptyLine();
         try {
-            usbTicketPrint1.doPrint(bean);
+            usb58TicketPrint1.doPrint(bean);
 
-            usbTicketPrint1.doPrintQRCode("www.baidu.com");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -502,27 +493,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     void printOrder2(){
         TicketPrintBean bean = new TicketPrintBean();
-        bean.setPrintCount(1);
-        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_BIG, TicketAlign.CENTER, "富友科技园2"));
-        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_BIG,TicketAlign.CENTER,"--已在线支付--"));
-        bean.addLineStr();
+//        bean.setPrintCount(1);
+//        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_BIG, TicketAlign.CENTER, "富友科技园2"));
+//        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_BIG,TicketAlign.CENTER,"--已在线支付--"));
+//        bean.addLineStr();
+//
+//        bean.addLineBean(new ColumnLineBean(new String[]{"订单号:1000098700000000000",  "人数：000000000人"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.RIGHT},new int[]{100,100}));
+//        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"商品总数：1"));
+//        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"下单时间：2019-03-20 18:00:32"));
+//        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"备注："));
+//        bean.addLineStr();
 
-        bean.addLineBean(new ColumnLineBean(new String[]{"订单号:10000987",  "人数：0人"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.RIGHT},new int[]{100,100}));
-        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"商品总数：1"));
-        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"下单时间：2019-03-20 18:00:32"));
-        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.LEFT,"备注："));
-        bean.addLineStr();
-
-        bean.addLineBean(new ColumnLineBean(new String[]{"双双鲜奶茶/大杯大杯大大杯",  "x1", "￥32.00"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.LEFT, TicketAlign.RIGHT},new int[]{200,100,100}));
-        bean.addLineBean(new ColumnLineBean(new String[]{"已付",  "￥32"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.RIGHT},new int[]{100,100}));
-        bean.addLineStr();
-
-        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.CENTER,"谢谢惠顾，欢迎下次光临"));
+        bean.addLineBean(new ColumnLineBean(new String[]{"双双鲜奶茶/大杯大杯大大杯ahfkahfkah",  "x11111111111111", "￥32.0000000000000"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.CENTER, TicketAlign.RIGHT},new int[]{250,60,100}));
+//        bean.addLineBean(new ColumnLineBean(new String[]{"已付",  "￥32"},new TicketAlign[]{TicketAlign.LEFT,TicketAlign.RIGHT},new int[]{100,100}));
+//        bean.addLineStr();
+//        bean.addLineBean(new QrcodeBean(TicketAlign.LEFT, "www.baidu.comwwwwwwwwwwwwwwwwwwwwwwwwwwwww"));
+//        bean.addLineBean(new SimpleLineBean(TicketTextSize.FONT_SIZE_NORMAL,TicketAlign.CENTER,"谢谢惠顾"));
         bean.addEmptyLine();
         bean.addEmptyLine();
+
         try {
-            usbTicketPrint2.doPrint(bean);
-            usbTicketPrint2.doPrintQRCode("www.baidu.com");
+            usb58TicketPrint2.doPrint(bean);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printImage(){
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.xxx);
+        try {
+            usb58TicketPrint2.doPrint(bitmap, 378);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printImage1(){
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.xxx);
+        try {
+            usb58TicketPrint1.doPrint(bitmap, 378);
         } catch (Exception e) {
             e.printStackTrace();
         }

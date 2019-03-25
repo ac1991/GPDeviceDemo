@@ -18,15 +18,16 @@ import java.util.List;
  * usb小票打印机实际连接和打印功能类
  * 实现usb设备连接和打印功能
  */
-public class USBTicketPrinter {
+public class USB58TicketPrinter {
 
-	private static final String TAG = "USBTicketPrinter";
+	private static final String TAG = "USB58TicketPrinter";
 
-	private final UsbDevice mDevice;
-	private final UsbDeviceConnection mConnection;
-	private final UsbInterface mInterface;
-	private final UsbEndpoint mEndpoint;
-	private final UsbEndpoint mInEndpoint;
+	private  UsbDevice mDevice;
+	private  UsbDeviceConnection mConnection;
+	private  UsbInterface mInterface;
+	private  UsbEndpoint mEndpoint;
+	private  UsbEndpoint mInEndpoint;
+	private Context context;
 
 	private static final int TRANSFER_TIMEOUT = 200;
 
@@ -36,13 +37,21 @@ public class USBTicketPrinter {
 	 */
 	private byte[] esc = {0x10, 0x04, 0x02};
 
-	public USBTicketPrinter(Context context, UsbDevice device) throws IOException {
+	public USB58TicketPrinter(Context context, UsbDevice device) throws IOException {
+		mDevice = device;
+		this.context = context;
+		open();
+	}
+
+	public void open() throws IOException {
+		close();
+
 		UsbInterface iface = null;
 		UsbEndpoint epout = null;
 		UsbEndpoint epin = null;
-		
-		for(int i=0; i<device.getInterfaceCount(); i++) {
-			iface = device.getInterface(i);
+
+		for(int i=0; i<mDevice.getInterfaceCount(); i++) {
+			iface = mDevice.getInterface(i);
 			if (iface == null)
 				throw new IOException("failed to get interface "+i);
 
@@ -58,7 +67,7 @@ public class USBTicketPrinter {
 					epin = ep;
 				}
 			}
-			
+
 			if(epout != null  && epin != null)
 				break;
 		}
@@ -67,7 +76,7 @@ public class USBTicketPrinter {
 			throw new IOException("no output endpoint.");
 		}
 
-		mDevice = device;
+
 		mInterface = iface;
 		mEndpoint = epout;
 		mInEndpoint = epin;
@@ -85,13 +94,18 @@ public class USBTicketPrinter {
 
 	public void write(byte[] data) throws IOException {
 		if (mConnection.bulkTransfer(mEndpoint, data, data.length,
-				TRANSFER_TIMEOUT) != data.length)
+				TRANSFER_TIMEOUT) != data.length) {
+			open();
 			throw new IOException("failed to write usb endpoint.");
+
+		}
 	}
 
 	public void close() {
-		mConnection.releaseInterface(mInterface);
-		mConnection.close();
+		if (mConnection != null && mInterface != null) {
+			mConnection.releaseInterface(mInterface);
+			mConnection.close();
+		}
 	}
 
 	public void print(List<byte[]> list){

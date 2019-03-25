@@ -6,9 +6,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.devicedemo.usb.OnTicketUsbStateListener;
-import com.example.devicedemo.usb.USBTicketPrinter;
-
-import java.io.IOException;
+import com.example.devicedemo.usb.USB58TicketPrinter;
 
 /**
  * Created by sqwu on 2019/3/11
@@ -36,12 +34,12 @@ public class PrintStateMonitor {
      */
     private static final int ESC_STATE_ERR_OCCURS = 0x40;
 
-    private USBTicketPrinter usbTicketPrinter = null;
+    private USB58TicketPrinter usb58TicketPrinter = null;
     private OnTicketUsbStateListener mOnTicketUsbStateListener = null;
     private PrinterReader mPrinterReader = null;
 
-    public PrintStateMonitor(USBTicketPrinter usbTicketPrinter){
-        this.usbTicketPrinter = usbTicketPrinter;
+    public PrintStateMonitor(USB58TicketPrinter usb58TicketPrinter){
+        this.usb58TicketPrinter = usb58TicketPrinter;
 
     }
 
@@ -50,8 +48,8 @@ public class PrintStateMonitor {
     }
 
     public void startMonitor(){
-        if (usbTicketPrinter == null){
-            throw new NullPointerException("usbTicketPrinter is null");
+        if (usb58TicketPrinter == null){
+            throw new NullPointerException("usb58TicketPrinter is null");
         }
         mPrinterReader = new PrinterReader();
         mPrinterReader.start();
@@ -80,13 +78,13 @@ public class PrintStateMonitor {
 
         @Override
         public void run() {
-            if(usbTicketPrinter == null){
-                throw  new NullPointerException("usbTicketPrinter is null");
+            if(usb58TicketPrinter == null){
+                throw  new NullPointerException("usb58TicketPrinter is null");
             }
             try {
                 while (isRun) {
                     //读取打印机返回信息
-                    int len = usbTicketPrinter.readData(buffer);
+                    int len = usb58TicketPrinter.readData(buffer);
                     if (len > 0) {
                         Message message = Message.obtain();
                         message.what = READ_DATA;
@@ -98,8 +96,8 @@ public class PrintStateMonitor {
                     }
                 }
             } catch (Exception e) {
-                if (usbTicketPrinter != null) {
-                    usbTicketPrinter.close();
+                if (usb58TicketPrinter != null) {
+                    usb58TicketPrinter.close();
                 }
             }
         }

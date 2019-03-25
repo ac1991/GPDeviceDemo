@@ -1,5 +1,7 @@
 package com.example.devicedemo.ticket;
 
+import android.graphics.Bitmap;
+
 import com.example.devicedemo.bean.TicketPrintBean;
 import com.example.devicedemo.utils.OnActionCallback;
 
@@ -13,7 +15,7 @@ public abstract class AbstractTicketAction implements BaseAction<TicketPrintConf
     private OnActionCallback callback;
 
     public abstract void doPrint(TicketPrintBean bean)throws Exception;
-    public abstract void doPrintQRCode(String qrcode)throws Exception;
+    public abstract void doPrint(Bitmap bean, int width)throws Exception;
     public abstract void openCashBox();
 
     @Override
